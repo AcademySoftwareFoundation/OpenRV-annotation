@@ -1,0 +1,10 @@
+build/
+build-coverage/
+build-sanitize/
+coverage/.venv/
+coverage/report/
+.DS_Store
+*.o
+*.a
+*.so
+*.dylib

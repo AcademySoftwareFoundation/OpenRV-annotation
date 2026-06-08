@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "brushes": [
+    {
+      "name": "circle",
+      "tip": null,
+      "blend": "normal",
+      "soft": false,
+      "note": "Procedural hard circle — no texture file needed"
+    },
+    {
+      "name": "gauss",
+      "tip": null,
+      "blend": "normal",
+      "soft": true,
+      "note": "Procedural Gaussian soft brush — no texture file needed"
+    },
+    {
+      "name": "marker",
+      "tip": "marker_128.png",
+      "blend": "marker",
+      "soft": false,
+      "params": {
+        "spacingBias": 1.0,
+        "opacityJitter": 0.0,
+        "radiusJitter": 0.0,
+        "rotationJitter": 0.0,
+        "spacingJitter": 0.0,
+        "rotateToStroke": false
+      }
+    },
+    {
+      "name": "airbrush",
+      "tip": "airbrush_128.png",
+      "blend": "normal",
+      "soft": true,
+      "params": {
+        "spacingBias": 0.6,
+        "opacityJitter": 0.0,
+        "radiusJitter": 0.0,
+        "rotationJitter": 0.0,
+        "spacingJitter": 0.1,
+        "rotateToStroke": false
+      }
+    },
+    {
+      "name": "glow",
+      "tip": "airbrush_128.png",
+      "blend": "additive",
+      "soft": true,
+      "params": {
+        "spacingBias": 0.5,
+        "opacityJitter": 0.0,
+        "radiusJitter": 0.0,
+        "rotationJitter": 0.0,
+        "spacingJitter": 0.1,
+        "rotateToStroke": false
+      }
+    }
+  ]
+}

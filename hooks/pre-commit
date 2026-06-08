@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(cpp|h)$' || true)
+
+if [ -z "$staged" ]; then
+    exit 0
+fi
+
+failed=()
+for f in $staged; do
+    if ! clang-format --dry-run --Werror "$f" 2>/dev/null; then
+        failed+=("$f")
+    fi
+done
+
+if [ ${#failed[@]} -gt 0 ]; then
+    echo "clang-format: the following staged files need formatting:"
+    for f in "${failed[@]}"; do
+        echo "  $f"
+    done
+    echo ""
+    echo "Run 'make format' to fix, then re-stage the files."
+    exit 1
+fi

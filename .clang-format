@@ -1,0 +1,54 @@
+---
+BasedOnStyle: LLVM
+Language: Cpp
+
+# Indentation
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+NamespaceIndentation: None
+
+# Column limit
+ColumnLimit: 100
+
+# Brace style: Allman throughout, except namespace stays on the same line
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel:      true
+  AfterClass:          true
+  AfterControlStatement: Always
+  AfterEnum:           true
+  AfterFunction:       true
+  AfterNamespace:      false
+  AfterStruct:         true
+  AfterUnion:          true
+  AfterExternBlock:    false
+  BeforeCatch:         true
+  BeforeElse:          true
+  IndentBraces:        false
+  SplitEmptyFunction:  false
+  SplitEmptyRecord:    false
+  SplitEmptyNamespace: false
+
+# Pointer and reference glued to the type, not the name
+PointerAlignment: Left
+
+# Constructor initialiser list: comma before each entry
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerIndentWidth: 4
+
+# Allow short constructs on a single line
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortFunctionsOnASingleLine:    Inline
+AllowShortLoopsOnASingleLine:        false
+
+# Align consecutive assignments within a block
+AlignConsecutiveAssignments:
+  Enabled:          true
+  AcrossEmptyLines: false
+  AcrossComments:   false
+
+# Includes: preserve manual grouping, sort within each group
+SortIncludes:  CaseSensitive
+IncludeBlocks: Preserve

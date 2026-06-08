@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }}, ${{ matrix.build_type }})
+    runs-on: ${{ matrix.os }}
+    if: github.repository_owner == 'AcademySoftwareFoundation'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        build_type: [Release, Debug]
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4.0.2
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.build_type }} --parallel
+
+      - name: Test
+        working-directory: build
+        run: ctest -C ${{ matrix.build_type }} --output-on-failure
+
+  format:
+    name: Check C++ formatting
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'AcademySoftwareFoundation'
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4.0.2
+
+      - name: Install clang-format
+        run: sudo apt-get install -y clang-format
+
+      - name: Check formatting
+        run: |
+          find TwkPaint TwkMath -name '*.cpp' -o -name '*.h' | \
+            xargs clang-format --dry-run --Werror
+
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'AcademySoftwareFoundation'
+    permissions:
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4.0.2
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@45b2be879a6f2e1f8d47a71e0499d86ff7c6428 # v3.28.15
+        with:
+          languages: c-cpp
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@45b2be879a6f2e1f8d47a71e0499d86ff7c6428 # v3.28.15
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@45b2be879a6f2e1f8d47a71e0499d86ff7c6428 # v3.28.15
