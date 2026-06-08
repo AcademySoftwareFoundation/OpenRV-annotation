@@ -1,6 +1,6 @@
 # OpenRV-annotation
 
-OpenRV-annotation is a C++ annotation rendering library. It provides triangle-ribbon path geometry (`TwkPaint::Path`), physics-based input smoothing (`TwkPaint::Smoother`), and stamp-based brush placement (`TwkPaint::StampPath`) for review annotation tools. Used natively by [OpenRV](https://github.com/AcademySoftwareFoundation/OpenRV) and compiled to WebAssembly for Creative Review via [OpenRV-annotation-wasm](https://github.com/AcademySoftwareFoundation/OpenRV-annotation-wasm).
+OpenRV-annotation is a C++ annotation geometry library. It produces triangle-ribbon path geometry (`TwkPaint::Path`), physics-based input smoothing (`TwkPaint::Smoother`), and stamp-based brush placement (`TwkPaint::StampPath`) for use as inputs to a renderer of your choice. Also includes shared GLSL shaders and brush tip assets. Used natively by [OpenRV](https://github.com/AcademySoftwareFoundation/OpenRV) and compiled to WebAssembly for Creative Review via [OpenRV-annotation-wasm](https://github.com/AcademySoftwareFoundation/OpenRV-annotation-wasm).
 
 ## Requirements
 
