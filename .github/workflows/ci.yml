@@ -57,12 +57,12 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4.0.2
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@45b2be879a6f2e1f8d47a71e0499d86ff7c6428 # v3.28.15
+        uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
         with:
           languages: c-cpp
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@45b2be879a6f2e1f8d47a71e0499d86ff7c6428 # v3.28.15
+        uses: github/codeql-action/autobuild@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
 
       - name: Analyze
-        uses: github/codeql-action/analyze@45b2be879a6f2e1f8d47a71e0499d86ff7c6428 # v3.28.15
+        uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
