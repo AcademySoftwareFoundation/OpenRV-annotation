@@ -27,6 +27,6 @@ jobs:
         run: ctest -C Release --output-on-failure
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@da05d552573ad5aba39232fa50e61d7e45b6a1d1 # v2.2.2
+        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
         with:
           generate_release_notes: true

@@ -4,6 +4,7 @@ build-sanitize/
 coverage/.venv/
 coverage/report/
 .DS_Store
+*.swp
 *.o
 *.a
 *.so
