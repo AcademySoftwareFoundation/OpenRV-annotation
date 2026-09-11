@@ -37,7 +37,7 @@ void StampPath::reset(const BrushParams& params)
         (params.spacing > 0.f) ? params.spacing : default_spacing_(params.radius, params.squish);
     base_angle_  = params.angle;
     points_seen_ = 0;
-    interp_.reset(new FltInterpolate2D);
+    interp_.reset(new SmoothInterpolate2D);
 }
 
 void StampPath::add_point(const TwkMath::Vec2f& pt, float radius, float opacity, float angle,

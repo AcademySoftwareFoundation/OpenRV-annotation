@@ -71,7 +71,7 @@ class StampPath
   public:
     explicit StampPath(const BrushParams& params = BrushParams{});
 
-    // Feed a new raw input point (post-input-smoother position).
+    // Feed one raw pointer event. Smoothing is handled internally.
     // Optional per-point overrides; pass < 0 to use BrushParams default.
     void add_point(const TwkMath::Vec2f& pt, float radius = -1.f, float opacity = -1.f,
                    float angle = -1.f, float squish = -1.f);
@@ -87,7 +87,7 @@ class StampPath
     float default_spacing_(float radius, float squish) const;
 
     BrushParams params_;
-    std::unique_ptr<FltInterpolate2D> interp_;
+    std::unique_ptr<Interpolate2D> interp_;
 
     // Per-segment interpolation state
     float from_radius_, to_radius_;
