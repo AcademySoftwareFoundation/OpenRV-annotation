@@ -174,6 +174,12 @@ void Path::filterPoints(PointArray& fpoints, ScalarArray& directionCoords, Scala
     const bool hasColor   = this->hasColor();
     const Color black(0, 0, 0, 1);
 
+    // Read once per call, not once per point -- getenv() takes a lock and
+    // linearly scans the environment, and this function runs on every
+    // repaint for every stroke on screen.
+    const char* sensitivityStr = getenv("TWK_PAINT_SPLAT_SENSITIVITY");
+    const float sensitivity    = (sensitivityStr) ? atof(sensitivityStr) : 1.0;
+
     //
     //  Filter the points. We can't have two samples within width of
     //  each other. Right now we just omit close points as
@@ -196,9 +202,6 @@ void Path::filterPoints(PointArray& fpoints, ScalarArray& directionCoords, Scala
         const Color c0  = hasColor ? fcolors.back() : black;
         const float wm  = max(w0, w1);
         const float mag = magnitude(p0 - p1);
-
-        const char* sensitivityStr = getenv("TWK_PAINT_SPLAT_SENSITIVITY");
-        const float sensitivity    = (sensitivityStr) ? atof(sensitivityStr) : 1.0;
 
         if (splatOnly)
         {
