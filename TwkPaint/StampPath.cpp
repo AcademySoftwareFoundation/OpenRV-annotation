@@ -37,8 +37,7 @@ void StampPath::reset(const BrushParams& params)
         (params.spacing > 0.f) ? params.spacing : default_spacing_(params.radius, params.squish);
     base_angle_  = params.angle;
     points_seen_ = 0;
-    if (params_.seed.has_value())
-        rng_.reset(params_.seed.value());
+    if (params_.seed.has_value()) rng_.reset(params_.seed.value());
     interp_.reset(new SmoothInterpolate2D);
 }
 
@@ -46,8 +45,7 @@ float StampPath::jitter_rand16_() const
 {
     if (params_.seed.has_value())
     {
-        return static_cast<float>(
-                   ((rng_.nextULong() & 0xff) << 8) | (rng_.nextULong() & 0xff)) *
+        return static_cast<float>(((rng_.nextULong() & 0xff) << 8) | (rng_.nextULong() & 0xff)) *
                (1.0f / 0xffff);
     }
 
@@ -171,8 +169,7 @@ bool StampPath::next(StampInstance& out)
         }
     }
 
-    if (params_.rotationJitter > 0.0f)
-        angle += jitter_rand_rotation_();
+    if (params_.rotationJitter > 0.0f) angle += jitter_rand_rotation_();
 
     out.angle = angle;
 

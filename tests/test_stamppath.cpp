@@ -267,9 +267,9 @@ static float meanStampSpacing(const std::vector<StampInstance>& stamps)
 TEST_CASE("default spacing matches charcoal at pixel radius", "[stamppath]")
 {
     BrushParams bp;
-    bp.radius       = 25.0f;
-    bp.spacing      = 0.0f;
-    bp.spacingBias  = 1.6f;
+    bp.radius      = 25.0f;
+    bp.spacing     = 0.0f;
+    bp.spacingBias = 1.6f;
 
     StampPath sp(bp);
     sp.add_point({0.0f, 0.0f}, 25.0f);
@@ -298,8 +298,7 @@ TEST_CASE("Higher spacingBias produces wider default spacing", "[stamppath]")
     spLoose.add_point({0.0f, 0.0f}, 25.0f);
     spLoose.add_point({200.0f, 0.0f}, 25.0f);
 
-    CHECK(meanStampSpacing(drainStamps(spTight)) <
-          meanStampSpacing(drainStamps(spLoose)));
+    CHECK(meanStampSpacing(drainStamps(spTight)) < meanStampSpacing(drainStamps(spLoose)));
 }
 
 TEST_CASE("default spacing is tighter than legacy radius*0.5*bias", "[stamppath]")
@@ -316,7 +315,7 @@ TEST_CASE("default spacing is tighter than legacy radius*0.5*bias", "[stamppath]
     const auto stamps = drainStamps(sp);
     REQUIRE(stamps.size() >= 2);
 
-    const float spacing = meanStampSpacing(stamps);
+    const float spacing       = meanStampSpacing(stamps);
     const float legacySpacing = 0.5f * 0.5f * 1.6f;
     CHECK(spacing < legacySpacing);
     CHECK_THAT(spacing, Catch::Matchers::WithinAbs(0.3f, 0.05f));
@@ -369,13 +368,13 @@ TEST_CASE("Jitter params do not crash and produce stamps", "[stamppath]")
 static std::vector<StampInstance> stampsForSeededStroke(uint32_t seed)
 {
     BrushParams bp;
-    bp.radius          = 0.05f;
-    bp.spacing         = 0.1f;
-    bp.spacingJitter   = 0.5f;
-    bp.opacityJitter   = 0.5f;
-    bp.radiusJitter    = 0.5f;
-    bp.rotationJitter  = 45.0f;
-    bp.seed            = seed;
+    bp.radius         = 0.05f;
+    bp.spacing        = 0.1f;
+    bp.spacingJitter  = 0.5f;
+    bp.opacityJitter  = 0.5f;
+    bp.radiusJitter   = 0.5f;
+    bp.rotationJitter = 45.0f;
+    bp.seed           = seed;
 
     StampPath sp(bp);
     sp.add_point({0.0f, 0.0f});
@@ -420,8 +419,8 @@ TEST_CASE("Different seeds produce different jitter", "[stamppath]")
     CHECK(differs);
 }
 
-static std::vector<StampInstance> feedPointsWithDrainAfterEach(StampPath& sp,
-                                                               const std::vector<TwkMath::Vec2f>& pts)
+static std::vector<StampInstance>
+feedPointsWithDrainAfterEach(StampPath& sp, const std::vector<TwkMath::Vec2f>& pts)
 {
     std::vector<StampInstance> out;
     StampInstance s;
@@ -458,7 +457,8 @@ TEST_CASE("Replay after each point matches a fresh placer with the same seed", "
     for (size_t i = 0; i < liveStamps.size(); ++i)
     {
         CHECK_THAT(liveStamps[i].radius, Catch::Matchers::WithinAbs(replayStamps[i].radius, 1e-6f));
-        CHECK_THAT(liveStamps[i].opacity, Catch::Matchers::WithinAbs(replayStamps[i].opacity, 1e-6f));
+        CHECK_THAT(liveStamps[i].opacity,
+                   Catch::Matchers::WithinAbs(replayStamps[i].opacity, 1e-6f));
         CHECK_THAT(liveStamps[i].angle, Catch::Matchers::WithinAbs(replayStamps[i].angle, 1e-6f));
     }
 }

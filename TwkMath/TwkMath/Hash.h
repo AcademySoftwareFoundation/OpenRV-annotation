@@ -11,8 +11,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace TwkMath
-{
+namespace TwkMath {
 
 //*****************************************************************************
 // hash_u32
