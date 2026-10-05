@@ -264,7 +264,7 @@ static float meanStampSpacing(const std::vector<StampInstance>& stamps)
     return total / static_cast<float>(stamps.size() - 1);
 }
 
-TEST_CASE("PaintCore default spacing matches charcoal at pixel radius", "[stamppath]")
+TEST_CASE("default spacing matches charcoal at pixel radius", "[stamppath]")
 {
     BrushParams bp;
     bp.radius       = 25.0f;
@@ -280,7 +280,7 @@ TEST_CASE("PaintCore default spacing matches charcoal at pixel radius", "[stampp
     CHECK_THAT(meanStampSpacing(stamps), Catch::Matchers::WithinAbs(12.0f, 0.5f));
 }
 
-TEST_CASE("Higher spacingBias produces wider PaintCore default spacing", "[stamppath]")
+TEST_CASE("Higher spacingBias produces wider default spacing", "[stamppath]")
 {
     BrushParams tight;
     tight.radius      = 25.0f;
@@ -302,7 +302,7 @@ TEST_CASE("Higher spacingBias produces wider PaintCore default spacing", "[stamp
           meanStampSpacing(drainStamps(spLoose)));
 }
 
-TEST_CASE("PaintCore default spacing is tighter than legacy radius*0.5*bias", "[stamppath]")
+TEST_CASE("default spacing is tighter than legacy radius*0.5*bias", "[stamppath]")
 {
     BrushParams bp;
     bp.radius      = 0.5f;
