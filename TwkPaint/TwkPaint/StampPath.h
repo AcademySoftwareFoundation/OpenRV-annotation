@@ -10,9 +10,11 @@
 
 #pragma once
 
+#include <TwkMath/Random.h>
 #include <TwkMath/Vec2.h>
 #include <TwkPaint/Smoother.h>
 #include <memory>
+#include <optional>
 
 namespace TwkPaint {
 
@@ -29,13 +31,17 @@ struct BrushParams
     float angle   = 0.0f; // base stamp angle in degrees
     float squish  = 1.0f; // aspect ratio [0..1], 1.0 = circle
 
-    float spacing       = 0.0f; // inter-stamp distance; 0 = use proportional default (radius * 0.5)
+    float spacing       = 0.0f; // inter-stamp distance; 0 = PaintCore default (make_dist_)
     float spacingBias   = 1.0f; // multiplier on default inter-stamp spacing
     float spacingJitter = 0.0f; // random spacing variation [0..1]
     float opacityJitter = 0.0f; // random opacity variation [0..1]
     float radiusJitter  = 0.0f; // random radius variation [0..1]
     float rotationJitter = 0.0f;  // random angle added per stamp (degrees)
     bool rotateToStroke  = false; // align stamp to stroke direction
+
+    /// When set, jitter uses a seeded QuickRand for deterministic placement.
+    /// When unset, jitter falls back to global rand() (legacy behaviour).
+    std::optional<uint32_t> seed;
 };
 
 // ── StampInstance ─────────────────────────────────────────────────────────────
@@ -85,8 +91,11 @@ class StampPath
 
   private:
     float default_spacing_(float radius, float squish) const;
+    float jitter_rand16_() const;
+    float jitter_rand_rotation_() const;
 
     BrushParams params_;
+    mutable TwkMath::QuickRand rng_;
     std::unique_ptr<Interpolate2D> interp_;
 
     // Per-segment interpolation state

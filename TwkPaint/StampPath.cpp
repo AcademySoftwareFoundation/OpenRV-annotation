@@ -37,7 +37,33 @@ void StampPath::reset(const BrushParams& params)
         (params.spacing > 0.f) ? params.spacing : default_spacing_(params.radius, params.squish);
     base_angle_  = params.angle;
     points_seen_ = 0;
+    if (params_.seed.has_value())
+        rng_.reset(params_.seed.value());
     interp_.reset(new SmoothInterpolate2D);
+}
+
+float StampPath::jitter_rand16_() const
+{
+    if (params_.seed.has_value())
+    {
+        return static_cast<float>(
+                   ((rng_.nextULong() & 0xff) << 8) | (rng_.nextULong() & 0xff)) *
+               (1.0f / 0xffff);
+    }
+
+    return static_cast<float>(((rand() & 0xff) << 8) | (rand() & 0xff)) * (1.0f / 0xffff);
+}
+
+float StampPath::jitter_rand_rotation_() const
+{
+    if (params_.seed.has_value())
+    {
+        return rng_.nextFloat() * (2.0f * params_.rotationJitter) - params_.rotationJitter;
+    }
+
+    return static_cast<float>(rand()) * (2.0f * params_.rotationJitter) *
+               static_cast<float>(1.0 / RAND_MAX) -
+           params_.rotationJitter;
 }
 
 void StampPath::add_point(const TwkMath::Vec2f& pt, float radius, float opacity, float angle,
@@ -118,8 +144,7 @@ bool StampPath::next(StampInstance& out)
     out.opacity = cur_opacity;
     if (params_.opacityJitter > 0.0f)
     {
-        const float r =
-            static_cast<float>(((rand() & 0xff) << 8) | (rand() & 0xff)) * (1.0f / 0xffff);
+        const float r = jitter_rand16_();
         out.opacity -= r * cur_opacity * (params_.opacityJitter / 20.0f);
         if (out.opacity < 0.0f) out.opacity = 0.0f;
     }
@@ -128,10 +153,9 @@ bool StampPath::next(StampInstance& out)
     out.radius = cur_radius;
     if (params_.radiusJitter > 0.0f)
     {
-        const float r =
-            static_cast<float>(((rand() & 0xff) << 8) | (rand() & 0xff)) * (1.0f / 0xffff);
+        const float r = jitter_rand16_();
         out.radius -= r * cur_radius * (params_.radiusJitter / 20.0f);
-        if (out.radius < 0.125f) out.radius = 0.125f;
+        if (out.radius < 0.0f) out.radius = 0.125f;
     }
 
     // ── angle: rotate-to-stroke + jitter ─────────────────────────────────────
@@ -148,46 +172,74 @@ bool StampPath::next(StampInstance& out)
     }
 
     if (params_.rotationJitter > 0.0f)
-    {
-        const float r = static_cast<float>(rand()) * (2.0f * params_.rotationJitter) *
-                            static_cast<float>(1.0 / RAND_MAX) -
-                        params_.rotationJitter;
-        angle += r;
-    }
+        angle += jitter_rand_rotation_();
 
     out.angle = angle;
 
     return true;
 }
 
+namespace {
+
+// PaintCore StampStrokeImpl::make_dist_ / NPCStrokeInterpolator::calculateDistance.
+constexpr float kRadiusLowerBound = 1.05f;
+constexpr float kSpacingLowerBound = 75.0f;
+constexpr float kRadiusUpperBound = 20.0f;
+constexpr float kSpacingUpperBound = 30.0f;
+
+float paintCoreSpacingTable(float radius)
+{
+    if (radius <= kRadiusLowerBound)
+        return kSpacingLowerBound;
+    if (radius >= kRadiusUpperBound)
+        return kSpacingUpperBound;
+    return kSpacingLowerBound +
+           (radius - kRadiusLowerBound) *
+               ((kSpacingUpperBound - kSpacingLowerBound) /
+                (kRadiusUpperBound - kRadiusLowerBound));
+}
+
+} // namespace
+
 // ── default_spacing_ ──────────────────────────────────────────────────────────
 //
 // Returns the default inter-stamp distance when BrushParams::spacing is not
-// set explicitly. Proportional to radius so it is correct in any coordinate
-// system (normalized, pixel, or otherwise).
-//
-// Spacing = radius * 0.5 * spacingBias, adjusted for squish so tightly-
-// squished stamps do not overlap excessively.
+// set explicitly. Matches PaintCore StampStrokeImpl::make_dist_ so SketchBook
+// spacingBias values behave as intended.
 //
 float StampPath::default_spacing_(float radius, float squish) const
 {
-    static constexpr float kFraction = 0.5f;
+    float rad = radius;
 
-    // Elliptical stamps: reduce effective radius by squish² so tightly-squished
-    // stamps don't overlap excessively.
-    const float r = (squish < 1.0f) ? radius * squish * squish : radius;
+    // Elliptical stamps: reduce effective radius by squish² (PaintCore make_dist_).
+    if (squish < 1.0f)
+        rad *= squish * squish;
 
-    float d = r * kFraction * params_.spacingBias;
+    float spacing = paintCoreSpacingTable(rad);
+    spacing *= params_.spacingBias;
+
+    if (rad < 4.0f)
+        spacing *= 0.5f;
+    else if (rad < 20.0f)
+        spacing *= (((rad - 4.0f) * (0.0625f * 0.5f)) + 0.5f);
+
+    // PaintCore clamps rad to kRadiusLowerBound before computing dist_; that
+    // stabilises sub-pixel brushes in pixel space but breaks normalized coords.
+    // Scale distance with the caller's radius instead.
+    float dist = (rad * spacing) * 0.01f;
 
     if (params_.spacingJitter > 0.0f)
     {
-        const float rnd   = static_cast<float>(((rand() & 0xff) << 8) | (rand() & 0xff));
-        const float range = params_.spacingJitter * d;
-        d += rnd * range * (1.0f / 32767.0f) - range;
+        const float rnd   = jitter_rand16_() * 65535.0f;
+        const float range = params_.spacingJitter * dist;
+        dist += rnd * range * (1.0f / 32767.0f) - range;
     }
 
-    // Clamp to a tiny positive value so we never get an infinite loop.
-    return (d > 0.0f) ? d : radius * 0.001f;
+    const float minDist = rad * 0.001f;
+    if (dist < minDist)
+        dist = minDist;
+
+    return dist;
 }
 
 } // namespace TwkPaint
