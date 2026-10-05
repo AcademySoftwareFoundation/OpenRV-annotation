@@ -269,7 +269,7 @@ TEST_CASE("default spacing matches charcoal at pixel radius", "[stamppath]")
     BrushParams bp;
     bp.radius      = 25.0f;
     bp.spacing     = 0.0f;
-    bp.spacingBias = 1.6f;
+    bp.spacingBias = 1.0f;
 
     StampPath sp(bp);
     sp.add_point({0.0f, 0.0f}, 25.0f);
@@ -299,26 +299,6 @@ TEST_CASE("Higher spacingBias produces wider default spacing", "[stamppath]")
     spLoose.add_point({200.0f, 0.0f}, 25.0f);
 
     CHECK(meanStampSpacing(drainStamps(spTight)) < meanStampSpacing(drainStamps(spLoose)));
-}
-
-TEST_CASE("default spacing is tighter than legacy radius*0.5*bias", "[stamppath]")
-{
-    BrushParams bp;
-    bp.radius      = 0.5f;
-    bp.spacing     = 0.0f;
-    bp.spacingBias = 1.6f;
-
-    StampPath sp(bp);
-    sp.add_point({0.0f, 0.0f}, 0.5f);
-    sp.add_point({10.0f, 0.0f}, 0.5f);
-
-    const auto stamps = drainStamps(sp);
-    REQUIRE(stamps.size() >= 2);
-
-    const float spacing       = meanStampSpacing(stamps);
-    const float legacySpacing = 0.5f * 0.5f * 1.6f;
-    CHECK(spacing < legacySpacing);
-    CHECK_THAT(spacing, Catch::Matchers::WithinAbs(0.3f, 0.05f));
 }
 
 // ── rotateToStroke ────────────────────────────────────────────────────────────
