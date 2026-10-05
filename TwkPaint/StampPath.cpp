@@ -179,67 +179,34 @@ bool StampPath::next(StampInstance& out)
     return true;
 }
 
-namespace {
-
-// PaintCore StampStrokeImpl::make_dist_ / NPCStrokeInterpolator::calculateDistance.
-constexpr float kRadiusLowerBound = 1.05f;
-constexpr float kSpacingLowerBound = 75.0f;
-constexpr float kRadiusUpperBound = 20.0f;
-constexpr float kSpacingUpperBound = 30.0f;
-
-float paintCoreSpacingTable(float radius)
-{
-    if (radius <= kRadiusLowerBound)
-        return kSpacingLowerBound;
-    if (radius >= kRadiusUpperBound)
-        return kSpacingUpperBound;
-    return kSpacingLowerBound +
-           (radius - kRadiusLowerBound) *
-               ((kSpacingUpperBound - kSpacingLowerBound) /
-                (kRadiusUpperBound - kRadiusLowerBound));
-}
-
-} // namespace
-
 // ── default_spacing_ ──────────────────────────────────────────────────────────
 //
 // Returns the default inter-stamp distance when BrushParams::spacing is not
-// set explicitly. Matches PaintCore StampStrokeImpl::make_dist_ so SketchBook
-// spacingBias values behave as intended.
+// set explicitly. Proportional to radius so it is correct in any coordinate
+// system (normalized, pixel, or otherwise).
+//
+// Spacing = radius * 0.5 * spacingBias, adjusted for squish so tightly-
+// squished stamps do not overlap excessively.
 //
 float StampPath::default_spacing_(float radius, float squish) const
 {
-    float rad = radius;
+    static constexpr float kFraction = 0.5f;
 
-    // Elliptical stamps: reduce effective radius by squish² (PaintCore make_dist_).
-    if (squish < 1.0f)
-        rad *= squish * squish;
+    // Elliptical stamps: reduce effective radius by squish² so tightly-squished
+    // stamps don't overlap excessively.
+    const float r = (squish < 1.0f) ? radius * squish * squish : radius;
 
-    float spacing = paintCoreSpacingTable(rad);
-    spacing *= params_.spacingBias;
-
-    if (rad < 4.0f)
-        spacing *= 0.5f;
-    else if (rad < 20.0f)
-        spacing *= (((rad - 4.0f) * (0.0625f * 0.5f)) + 0.5f);
-
-    // PaintCore clamps rad to kRadiusLowerBound before computing dist_; that
-    // stabilises sub-pixel brushes in pixel space but breaks normalized coords.
-    // Scale distance with the caller's radius instead.
-    float dist = (rad * spacing) * 0.01f;
+    float d = r * kFraction * params_.spacingBias;
 
     if (params_.spacingJitter > 0.0f)
     {
         const float rnd   = jitter_rand16_() * 65535.0f;
-        const float range = params_.spacingJitter * dist;
-        dist += rnd * range * (1.0f / 32767.0f) - range;
+        const float range = params_.spacingJitter * d;
+        d += rnd * range * (1.0f / 32767.0f) - range;
     }
 
-    const float minDist = rad * 0.001f;
-    if (dist < minDist)
-        dist = minDist;
-
-    return dist;
+    // Clamp to a tiny positive value so we never get an infinite loop.
+    return (d > 0.0f) ? d : radius * 0.001f;
 }
 
 } // namespace TwkPaint
