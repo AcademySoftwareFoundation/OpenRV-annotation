@@ -1,4 +1,4 @@
-add_library(TwkPaint STATIC Path.cpp Smoother.cpp StampPath.cpp StampSeed.cpp)
+add_library(TwkPaint STATIC Path.cpp Smoother.cpp StampPath.cpp)
 
 target_include_directories(TwkPaint PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
