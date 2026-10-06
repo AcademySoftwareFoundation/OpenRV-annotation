@@ -10,11 +10,11 @@
 
 #pragma once
 
-#include <TwkMath/Random.h>
 #include <TwkMath/Vec2.h>
 #include <TwkPaint/Smoother.h>
 #include <memory>
 #include <optional>
+#include <random>
 
 namespace TwkPaint {
 
@@ -39,7 +39,7 @@ struct BrushParams
     float rotationJitter = 0.0f;  // random angle added per stamp (degrees)
     bool rotateToStroke  = false; // align stamp to stroke direction
 
-    // When set, jitter uses a seeded QuickRand for deterministic placement.
+    // When set, jitter uses a seeded std::mt19937 for deterministic placement.
     // When unset, jitter falls back to global rand() (legacy behaviour).
     std::optional<uint32_t> seed;
 };
@@ -94,8 +94,16 @@ class StampPath
     float jitter_rand16_() const;
     float jitter_rand_rotation_() const;
 
+    // Raw mt19937 draw mapped to [0, 1]. Intentionally avoids
+    // std::uniform_real_distribution, whose algorithm is not standardized
+    // and can differ between standard library implementations.
+    float seeded_rand01_() const;
+
     BrushParams params_;
-    mutable TwkMath::QuickRand rng_;
+    // Raw mt19937 output (not std::uniform_*_distribution, whose algorithms
+    // are implementation-defined) is used for jitter so seeded replay is
+    // bit-for-bit reproducible across platforms/compilers.
+    mutable std::mt19937 rng_;
     std::unique_ptr<Interpolate2D> interp_;
 
     // Per-segment interpolation state

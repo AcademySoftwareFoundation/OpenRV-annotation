@@ -37,17 +37,31 @@ void StampPath::reset(const BrushParams& params)
         (params.spacing > 0.f) ? params.spacing : default_spacing_(params.radius, params.squish);
     base_angle_  = params.angle;
     points_seen_ = 0;
-    if (params_.seed.has_value()) rng_.reset(params_.seed.value());
+    if (params_.seed.has_value()) rng_.seed(params_.seed.value());
     interp_.reset(new SmoothInterpolate2D);
 }
 
+// returns a random float in the range [0.0, 1.0]
+float StampPath::seeded_rand01_() const
+{
+    // rng_() is std::mt19937's raw generator output: a uint_fast32_t in
+    // [0, 2^32 - 1] whose values are fully specified by the C++ standard.
+    return static_cast<float>(rng_()) / static_cast<float>(std::mt19937::max());
+}
+
+// Returns a random float in [0, 1], used to drive opacity/radius/spacing
+// jitter. Draws two random bytes (hi/lo, each 0-255) and combines them into
+// a 16-bit value (hi << 8 | lo), then normalizes that back down to [0, 1].
+// Going via two bytes instead of a single call is a holdover from an older
+// byte-oriented RNG API; it's kept so the seeded and unseeded (legacy
+// rand()-based) paths below produce comparably-shaped jitter.
 float StampPath::jitter_rand16_() const
 {
-    // Apparantly the evaluation order of `<<` is not guaranteed by C++ standard.
+    // the evaluation order of `<<` is not guaranteed by C++ standard.
     if (params_.seed.has_value())
     {
-        const unsigned long hi = rng_.nextULong() & 0xff;
-        const unsigned long lo = rng_.nextULong() & 0xff;
+        const unsigned long hi = static_cast<unsigned long>(seeded_rand01_() * 0xff);
+        const unsigned long lo = static_cast<unsigned long>(seeded_rand01_() * 0xff);
         return static_cast<float>((hi << 8) | lo) * (1.0f / 0xffff);
     }
 
@@ -60,7 +74,7 @@ float StampPath::jitter_rand_rotation_() const
 {
     if (params_.seed.has_value())
     {
-        return rng_.nextFloat() * (2.0f * params_.rotationJitter) - params_.rotationJitter;
+        return seeded_rand01_() * (2.0f * params_.rotationJitter) - params_.rotationJitter;
     }
 
     return static_cast<float>(rand()) * (2.0f * params_.rotationJitter) *
@@ -201,9 +215,8 @@ float StampPath::default_spacing_(float radius, float squish) const
 
     if (params_.spacingJitter > 0.0f)
     {
-        const float rnd   = jitter_rand16_() * 65535.0f;
         const float range = params_.spacingJitter * d;
-        d += rnd * range * (1.0f / 32767.0f) - range;
+        d += (2.0f * jitter_rand16_() - 1.0f) * range;
     }
 
     // Clamp to a tiny positive value so we never get an infinite loop.
