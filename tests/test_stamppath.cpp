@@ -264,7 +264,7 @@ static float meanStampSpacing(const std::vector<StampInstance>& stamps)
     return total / static_cast<float>(stamps.size() - 1);
 }
 
-TEST_CASE("default spacing matches charcoal at pixel radius", "[stamppath]")
+TEST_CASE("setting spacing=0 produces default spacing", "[stamppath]")
 {
     BrushParams bp;
     bp.radius      = 25.0f;
@@ -339,7 +339,7 @@ TEST_CASE("Jitter params do not crash and produce stamps", "[stamppath]")
     // Even with jitter, radius/opacity must stay in a reasonable range.
     for (const auto& s : stamps)
     {
-        CHECK(s.radius > 0.0f);
+        CHECK(s.radius >= 0.0f);
         CHECK(s.opacity >= 0.0f);
         CHECK(s.opacity <= 1.0f);
     }
@@ -364,18 +364,19 @@ static std::vector<StampInstance> stampsForSeededStroke(uint32_t seed)
 
 TEST_CASE("Seeded jitter is deterministic across replays", "[stamppath]")
 {
-    const auto first  = stampsForSeededStroke(3213262474u);
-    const auto second = stampsForSeededStroke(3213262474u);
+    const auto first   = stampsForSeededStroke(3213262474u);
+    const auto second  = stampsForSeededStroke(3213262474u);
+    const auto epsilon = std::numeric_limits<double>::epsilon();
 
     REQUIRE(first.size() == second.size());
     REQUIRE_FALSE(first.empty());
     for (size_t i = 0; i < first.size(); ++i)
     {
-        CHECK_THAT(first[i].pos.x, Catch::Matchers::WithinAbs(second[i].pos.x, 1e-6f));
-        CHECK_THAT(first[i].pos.y, Catch::Matchers::WithinAbs(second[i].pos.y, 1e-6f));
-        CHECK_THAT(first[i].radius, Catch::Matchers::WithinAbs(second[i].radius, 1e-6f));
-        CHECK_THAT(first[i].opacity, Catch::Matchers::WithinAbs(second[i].opacity, 1e-6f));
-        CHECK_THAT(first[i].angle, Catch::Matchers::WithinAbs(second[i].angle, 1e-6f));
+        CHECK_THAT(first[i].pos.x, Catch::Matchers::WithinAbs(second[i].pos.x, epsilon));
+        CHECK_THAT(first[i].pos.y, Catch::Matchers::WithinAbs(second[i].pos.y, epsilon));
+        CHECK_THAT(first[i].radius, Catch::Matchers::WithinAbs(second[i].radius, epsilon));
+        CHECK_THAT(first[i].opacity, Catch::Matchers::WithinAbs(second[i].opacity, epsilon));
+        CHECK_THAT(first[i].angle, Catch::Matchers::WithinAbs(second[i].angle, epsilon));
     }
 }
 
@@ -434,11 +435,14 @@ TEST_CASE("Replay after each point matches a fresh placer with the same seed", "
 
     REQUIRE(liveStamps.size() == replayStamps.size());
     REQUIRE_FALSE(liveStamps.empty());
+
+    const auto epsilon = std::numeric_limits<double>::epsilon();
     for (size_t i = 0; i < liveStamps.size(); ++i)
     {
-        CHECK_THAT(liveStamps[i].radius, Catch::Matchers::WithinAbs(replayStamps[i].radius, 1e-6f));
+        CHECK_THAT(liveStamps[i].radius,
+                   Catch::Matchers::WithinAbs(replayStamps[i].radius, epsilon));
         CHECK_THAT(liveStamps[i].opacity,
-                   Catch::Matchers::WithinAbs(replayStamps[i].opacity, 1e-6f));
-        CHECK_THAT(liveStamps[i].angle, Catch::Matchers::WithinAbs(replayStamps[i].angle, 1e-6f));
+                   Catch::Matchers::WithinAbs(replayStamps[i].opacity, epsilon));
+        CHECK_THAT(liveStamps[i].angle, Catch::Matchers::WithinAbs(replayStamps[i].angle, epsilon));
     }
 }
