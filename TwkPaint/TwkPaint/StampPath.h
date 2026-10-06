@@ -31,7 +31,7 @@ struct BrushParams
     float angle   = 0.0f; // base stamp angle in degrees
     float squish  = 1.0f; // aspect ratio [0..1], 1.0 = circle
 
-    float spacing        = 0.0f;  // inter-stamp distance; 0 = default spacing (make_dist_)
+    float spacing        = 0.0f;  // inter-stamp distance; 0 = default spacing
     float spacingBias    = 1.0f;  // multiplier on default inter-stamp spacing
     float spacingJitter  = 0.0f;  // random spacing variation [0..1]
     float opacityJitter  = 0.0f;  // random opacity variation [0..1]

@@ -43,13 +43,17 @@ void StampPath::reset(const BrushParams& params)
 
 float StampPath::jitter_rand16_() const
 {
+    // Apparantly the evaluation order of `<<` is not guaranteed by C++ standard.
     if (params_.seed.has_value())
     {
-        return static_cast<float>(((rng_.nextULong() & 0xff) << 8) | (rng_.nextULong() & 0xff)) *
-               (1.0f / 0xffff);
+        const unsigned long hi = rng_.nextULong() & 0xff;
+        const unsigned long lo = rng_.nextULong() & 0xff;
+        return static_cast<float>((hi << 8) | lo) * (1.0f / 0xffff);
     }
 
-    return static_cast<float>(((rand() & 0xff) << 8) | (rand() & 0xff)) * (1.0f / 0xffff);
+    const unsigned long hi = rand() & 0xff;
+    const unsigned long lo = rand() & 0xff;
+    return static_cast<float>((hi << 8) | lo) * (1.0f / 0xffff);
 }
 
 float StampPath::jitter_rand_rotation_() const
@@ -153,7 +157,7 @@ bool StampPath::next(StampInstance& out)
     {
         const float r = jitter_rand16_();
         out.radius -= r * cur_radius * (params_.radiusJitter / 20.0f);
-        if (out.radius < 0.0f) out.radius = 0.125f;
+        if (out.radius < 0.0f) out.radius = 0.0f;
     }
 
     // ── angle: rotate-to-stroke + jitter ─────────────────────────────────────
