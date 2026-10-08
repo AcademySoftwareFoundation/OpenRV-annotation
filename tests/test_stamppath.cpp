@@ -446,3 +446,35 @@ TEST_CASE("Replay after each point matches a fresh placer with the same seed", "
         CHECK_THAT(liveStamps[i].angle, Catch::Matchers::WithinAbs(replayStamps[i].angle, epsilon));
     }
 }
+
+TEST_CASE("Seeded jitter matches known values", "[stamppath]")
+{
+    BrushParams bp;
+    bp.radius         = 0.05f;
+    bp.spacingJitter  = 0.5f;
+    bp.opacityJitter  = 0.5f;
+    bp.radiusJitter   = 0.5f;
+    bp.rotationJitter = 45.0f;
+    bp.seed           = 3213262474u;
+
+    StampPath sp(bp);
+    const auto stamps = feedPointsWithDrainAfterEach(sp, {{0.0f, 0.0f}, {0.5f, 0.0f}, {1.0f, 0.0f}});
+
+    // Golden values; if these change, seeded annotations will render differently.
+    struct Expected { float x, radius, opacity, angle; };
+    const Expected expected[] = {
+        {0.002116f, 0.049022f, 0.988437f, 19.435486f},
+        {0.027972f, 0.048929f, 0.977128f, 35.645943f},
+        {0.049968f, 0.049871f, 0.980465f, 18.181038f},
+        {0.063755f, 0.049358f, 0.987663f, 25.056730f},
+    };
+
+    REQUIRE(stamps.size() == 19);
+    for (size_t i = 0; i < std::size(expected); ++i)
+    {
+        CHECK_THAT(stamps[i].pos.x, Catch::Matchers::WithinAbs(expected[i].x, 1e-5));
+        CHECK_THAT(stamps[i].radius, Catch::Matchers::WithinAbs(expected[i].radius, 1e-5));
+        CHECK_THAT(stamps[i].opacity, Catch::Matchers::WithinAbs(expected[i].opacity, 1e-5));
+        CHECK_THAT(stamps[i].angle, Catch::Matchers::WithinAbs(expected[i].angle, 1e-4));
+    }
+}
