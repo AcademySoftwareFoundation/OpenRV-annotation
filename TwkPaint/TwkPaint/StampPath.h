@@ -33,7 +33,7 @@ struct BrushParams
 
     float spacing        = 0.0f;  // inter-stamp distance; 0 = default spacing
     float spacingBias    = 1.0f;  // multiplier on default inter-stamp spacing
-    float spacingJitter  = 0.0f;  // random spacing variation [0..1]
+    float spacingJitter  = 0.0f;  // random spacing variation [0..1], ignored if spacing is != 0
     float opacityJitter  = 0.0f;  // random opacity variation [0..1]
     float radiusJitter   = 0.0f;  // random radius variation [0..1]
     float rotationJitter = 0.0f;  // random angle added per stamp (degrees)

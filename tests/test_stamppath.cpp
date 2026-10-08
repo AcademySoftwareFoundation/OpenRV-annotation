@@ -349,7 +349,7 @@ static std::vector<StampInstance> stampsForSeededStroke(uint32_t seed)
 {
     BrushParams bp;
     bp.radius         = 0.05f;
-    bp.spacing        = 0.1f;
+    bp.spacing        = 0.0f;
     bp.spacingJitter  = 0.5f;
     bp.opacityJitter  = 0.5f;
     bp.radiusJitter   = 0.5f;
@@ -386,7 +386,7 @@ TEST_CASE("Different seeds produce different jitter", "[stamppath]")
     const auto b = stampsForSeededStroke(2u);
 
     REQUIRE_FALSE(a.empty());
-    REQUIRE(a.size() == b.size());
+    REQUIRE(a.size() != b.size()); // spacingJitter will produce different number of stamps
 
     bool differs = false;
     for (size_t i = 0; i < a.size(); ++i)
