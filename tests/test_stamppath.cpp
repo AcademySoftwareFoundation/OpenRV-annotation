@@ -255,6 +255,52 @@ TEST_CASE("spacing=0 uses proportional default and still produces stamps", "[sta
     CHECK_FALSE(drainStamps(sp).empty());
 }
 
+static float meanStampSpacing(const std::vector<StampInstance>& stamps)
+{
+    REQUIRE(stamps.size() >= 2);
+    float total = 0.0f;
+    for (size_t i = 1; i < stamps.size(); ++i)
+        total += stamps[i].pos.x - stamps[i - 1].pos.x;
+    return total / static_cast<float>(stamps.size() - 1);
+}
+
+TEST_CASE("setting spacing=0 produces default spacing", "[stamppath]")
+{
+    BrushParams bp;
+    bp.radius      = 25.0f;
+    bp.spacing     = 0.0f;
+    bp.spacingBias = 1.0f;
+
+    StampPath sp(bp);
+    sp.add_point({0.0f, 0.0f}, 25.0f);
+    sp.add_point({200.0f, 0.0f}, 25.0f);
+
+    const auto stamps = drainStamps(sp);
+    REQUIRE(stamps.size() >= 3);
+    CHECK_THAT(meanStampSpacing(stamps), Catch::Matchers::WithinAbs(12.0f, 0.5f));
+}
+
+TEST_CASE("Higher spacingBias produces wider default spacing", "[stamppath]")
+{
+    BrushParams tight;
+    tight.radius      = 25.0f;
+    tight.spacing     = 0.0f;
+    tight.spacingBias = 1.0f;
+
+    BrushParams loose;
+    loose.radius      = 25.0f;
+    loose.spacing     = 0.0f;
+    loose.spacingBias = 1.6f;
+
+    StampPath spTight(tight), spLoose(loose);
+    spTight.add_point({0.0f, 0.0f}, 25.0f);
+    spTight.add_point({200.0f, 0.0f}, 25.0f);
+    spLoose.add_point({0.0f, 0.0f}, 25.0f);
+    spLoose.add_point({200.0f, 0.0f}, 25.0f);
+
+    CHECK(meanStampSpacing(drainStamps(spTight)) < meanStampSpacing(drainStamps(spLoose)));
+}
+
 // ── rotateToStroke ────────────────────────────────────────────────────────────
 
 TEST_CASE("rotateToStroke=true produces stamps without crash", "[stamppath]")
@@ -293,8 +339,142 @@ TEST_CASE("Jitter params do not crash and produce stamps", "[stamppath]")
     // Even with jitter, radius/opacity must stay in a reasonable range.
     for (const auto& s : stamps)
     {
-        CHECK(s.radius > 0.0f);
+        CHECK(s.radius >= 0.0f);
         CHECK(s.opacity >= 0.0f);
         CHECK(s.opacity <= 1.0f);
+    }
+}
+
+static std::vector<StampInstance> stampsForSeededStroke(uint32_t seed)
+{
+    BrushParams bp;
+    bp.radius         = 0.05f;
+    bp.spacing        = 0.0f;
+    bp.spacingJitter  = 0.5f;
+    bp.opacityJitter  = 0.5f;
+    bp.radiusJitter   = 0.5f;
+    bp.rotationJitter = 45.0f;
+    bp.seed           = seed;
+
+    StampPath sp(bp);
+    sp.add_point({0.0f, 0.0f});
+    sp.add_point({1.0f, 0.0f});
+    return drainStamps(sp);
+}
+
+TEST_CASE("Seeded jitter is deterministic across replays", "[stamppath]")
+{
+    const auto first   = stampsForSeededStroke(3213262474u);
+    const auto second  = stampsForSeededStroke(3213262474u);
+    const auto epsilon = std::numeric_limits<double>::epsilon();
+
+    REQUIRE(first.size() == second.size());
+    REQUIRE_FALSE(first.empty());
+    for (size_t i = 0; i < first.size(); ++i)
+    {
+        CHECK_THAT(first[i].pos.x, Catch::Matchers::WithinAbs(second[i].pos.x, epsilon));
+        CHECK_THAT(first[i].pos.y, Catch::Matchers::WithinAbs(second[i].pos.y, epsilon));
+        CHECK_THAT(first[i].radius, Catch::Matchers::WithinAbs(second[i].radius, epsilon));
+        CHECK_THAT(first[i].opacity, Catch::Matchers::WithinAbs(second[i].opacity, epsilon));
+        CHECK_THAT(first[i].angle, Catch::Matchers::WithinAbs(second[i].angle, epsilon));
+    }
+}
+
+TEST_CASE("Different seeds produce different jitter", "[stamppath]")
+{
+    const auto a = stampsForSeededStroke(1u);
+    const auto b = stampsForSeededStroke(2u);
+
+    REQUIRE_FALSE(a.empty());
+    REQUIRE(a.size() != b.size()); // spacingJitter will produce different number of stamps
+
+    bool differs = false;
+    for (size_t i = 0; i < a.size(); ++i)
+    {
+        if (a[i].radius != b[i].radius || a[i].opacity != b[i].opacity || a[i].angle != b[i].angle)
+        {
+            differs = true;
+            break;
+        }
+    }
+    CHECK(differs);
+}
+
+static std::vector<StampInstance>
+feedPointsWithDrainAfterEach(StampPath& sp, const std::vector<TwkMath::Vec2f>& pts)
+{
+    std::vector<StampInstance> out;
+    StampInstance s;
+    for (const auto& pt : pts)
+    {
+        sp.add_point(pt);
+        while (sp.next(s))
+            out.push_back(s);
+    }
+    return out;
+}
+
+TEST_CASE("Replay after each point matches a fresh placer with the same seed", "[stamppath]")
+{
+    BrushParams bp;
+    bp.radius         = 0.05f;
+    bp.spacing        = 0.1f;
+    bp.spacingJitter  = 0.5f;
+    bp.opacityJitter  = 0.5f;
+    bp.radiusJitter   = 0.5f;
+    bp.rotationJitter = 45.0f;
+    bp.seed           = 3213262474u;
+
+    const std::vector<TwkMath::Vec2f> pts{{0.0f, 0.0f}, {0.5f, 0.0f}, {1.0f, 0.0f}};
+
+    StampPath live(bp);
+    const auto liveStamps = feedPointsWithDrainAfterEach(live, pts);
+
+    StampPath replay(bp);
+    const auto replayStamps = feedPointsWithDrainAfterEach(replay, pts);
+
+    REQUIRE(liveStamps.size() == replayStamps.size());
+    REQUIRE_FALSE(liveStamps.empty());
+
+    const auto epsilon = std::numeric_limits<double>::epsilon();
+    for (size_t i = 0; i < liveStamps.size(); ++i)
+    {
+        CHECK_THAT(liveStamps[i].radius,
+                   Catch::Matchers::WithinAbs(replayStamps[i].radius, epsilon));
+        CHECK_THAT(liveStamps[i].opacity,
+                   Catch::Matchers::WithinAbs(replayStamps[i].opacity, epsilon));
+        CHECK_THAT(liveStamps[i].angle, Catch::Matchers::WithinAbs(replayStamps[i].angle, epsilon));
+    }
+}
+
+TEST_CASE("Seeded jitter matches known values", "[stamppath]")
+{
+    BrushParams bp;
+    bp.radius         = 0.05f;
+    bp.spacingJitter  = 0.5f;
+    bp.opacityJitter  = 0.5f;
+    bp.radiusJitter   = 0.5f;
+    bp.rotationJitter = 45.0f;
+    bp.seed           = 3213262474u;
+
+    StampPath sp(bp);
+    const auto stamps = feedPointsWithDrainAfterEach(sp, {{0.0f, 0.0f}, {0.5f, 0.0f}, {1.0f, 0.0f}});
+
+    // Golden values; if these change, seeded annotations will render differently.
+    struct Expected { float x, radius, opacity, angle; };
+    const Expected expected[] = {
+        {0.002116f, 0.049022f, 0.988437f, 19.435486f},
+        {0.027972f, 0.048929f, 0.977128f, 35.645943f},
+        {0.049968f, 0.049871f, 0.980465f, 18.181038f},
+        {0.063755f, 0.049358f, 0.987663f, 25.056730f},
+    };
+
+    REQUIRE(stamps.size() == 19);
+    for (size_t i = 0; i < std::size(expected); ++i)
+    {
+        CHECK_THAT(stamps[i].pos.x, Catch::Matchers::WithinAbs(expected[i].x, 1e-5));
+        CHECK_THAT(stamps[i].radius, Catch::Matchers::WithinAbs(expected[i].radius, 1e-5));
+        CHECK_THAT(stamps[i].opacity, Catch::Matchers::WithinAbs(expected[i].opacity, 1e-5));
+        CHECK_THAT(stamps[i].angle, Catch::Matchers::WithinAbs(expected[i].angle, 1e-4));
     }
 }

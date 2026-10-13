@@ -11,6 +11,7 @@ add_executable(twkpaint_tests
     test_path.cpp
     test_smoother.cpp
     test_stamppath.cpp
+    test_hash.cpp
 )
 
 target_link_libraries(twkpaint_tests PRIVATE TwkPaint Catch2::Catch2WithMain)
