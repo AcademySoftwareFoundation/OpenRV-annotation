@@ -163,7 +163,7 @@ bool StampPath::next(StampInstance& out)
     if (params_.opacityJitter > 0.0f)
     {
         const float r = jitter_rand16_();
-        out.opacity -= r * cur_opacity * (params_.opacityJitter / 20.0f);
+        out.opacity -= r * cur_opacity * params_.opacityJitter;
         if (out.opacity < 0.0f) out.opacity = 0.0f;
     }
 
@@ -172,7 +172,7 @@ bool StampPath::next(StampInstance& out)
     if (params_.radiusJitter > 0.0f)
     {
         const float r = jitter_rand16_();
-        out.radius -= r * cur_radius * (params_.radiusJitter / 20.0f);
+        out.radius -= r * cur_radius * params_.radiusJitter;
         if (out.radius < 0.0f) out.radius = 0.0f;
     }
 

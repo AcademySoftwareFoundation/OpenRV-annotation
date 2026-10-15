@@ -71,7 +71,7 @@
       "params": {
         "spacingBias": 0.18,
         "spacingJitter": 2.8,
-        "opacityJitter": 2.0,
+        "opacityJitter": 0.1,
         "radiusJitter": 0.0,
         "rotationJitter": 105.9,
         "rotateToStroke": true,

@@ -499,10 +499,10 @@ TEST_CASE("Seeded jitter matches known values", "[stamppath]")
     // Golden values; if these change, seeded annotations will render differently.
     struct Expected { float x, radius, opacity, angle; };
     const Expected expected[] = {
-        {0.002116f, 0.049022f, 0.988437f, 19.435486f},
-        {0.027972f, 0.048929f, 0.977128f, 35.645943f},
-        {0.049968f, 0.049871f, 0.980465f, 18.181038f},
-        {0.063755f, 0.049358f, 0.987663f, 25.056730f},
+        {0.002116f, 0.030447f, 0.768734f, 19.435486f},
+        {0.027972f, 0.028581f, 0.542565f, 35.645943f},
+        {0.049968f, 0.047418f, 0.609308f, 18.181038f},
+        {0.063755f, 0.037151f, 0.753269f, 25.056730f},
     };
 
     REQUIRE(stamps.size() == 19);

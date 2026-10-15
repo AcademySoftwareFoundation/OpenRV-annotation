@@ -19,8 +19,8 @@ are implemented in `TwkPaint/StampPath.cpp`, and the stamp's look in
 | --- | --- | --- |
 | `spacingBias` | Distance between stamps, relative to brush size: `radius × 0.5 × spacingBias`. Low = dense, smooth line; high = visible individual stamps. Ignored if an explicit `spacing` is set. | `StampPath` input |
 | `spacingJitter` | Randomizes each gap by up to ±`spacingJitter` × the normal gap. Values above 1 can collapse gaps to near zero, producing clumps. | `StampPath` input |
-| `opacityJitter` | Randomly makes stamps fainter, by up to `opacityJitter / 20` of their opacity. Never increases opacity. | `StampPath` input |
-| `radiusJitter` | Randomly makes stamps smaller, by up to `radiusJitter / 20` of their radius. | `StampPath` input |
+| `opacityJitter` | Randomly makes stamps fainter, by up to `opacityJitter` (range `[0..1]`) of their opacity. Never increases opacity. | `StampPath` input |
+| `radiusJitter` | Randomly makes stamps smaller, by up to `radiusJitter` (range `[0..1]`) of their radius. | `StampPath` input |
 | `angle` | Fixed tip rotation in degrees. When `rotateToStroke` is on, it's an offset from the stroke direction. | `StampPath` input |
 | `rotateToStroke` | If `true`, each stamp turns to follow the direction of the stroke, for directional tips. | `StampPath` input |
 | `rotationJitter` | Adds a random rotation between −value and +value degrees to every stamp. Large values hide the repeating texture. | `StampPath` input |
