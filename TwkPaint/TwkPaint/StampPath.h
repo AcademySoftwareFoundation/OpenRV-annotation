@@ -116,9 +116,8 @@ class StampPath
     bool angle_changing_;
     bool squish_changing_;
 
-    float frac_;       // fractional position along current segment [0..1]
-    float dist_;       // inter-stamp distance (same units as input coordinates)
-    float base_angle_; // stroke base angle for rotate-to-stroke
+    float frac_; // fractional position along current segment [0..1]
+    float dist_; // inter-stamp distance (same units as input coordinates)
     int points_seen_;
 };
 

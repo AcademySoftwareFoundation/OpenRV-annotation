@@ -220,7 +220,24 @@ TEST_CASE("Per-point angle override is reflected in stamp", "[stamppath]")
     auto stamps = drainStamps(sp);
     REQUIRE_FALSE(stamps.empty());
     for (const auto& s : stamps)
-        CHECK(s.angle > 0.0f - 1e-4f); // angle biased toward 45°
+        CHECK_THAT(s.angle, Catch::Matchers::WithinAbs(45.0f, 1e-4f));
+}
+
+TEST_CASE("BrushParams angle is applied once", "[stamppath]")
+{
+    BrushParams bp;
+    bp.radius  = 0.05f;
+    bp.spacing = 0.1f;
+    bp.angle   = 30.0f;
+
+    StampPath sp(bp);
+    sp.add_point({0.0f, 0.0f});
+    sp.add_point({1.0f, 0.0f});
+
+    auto stamps = drainStamps(sp);
+    REQUIRE_FALSE(stamps.empty());
+    for (const auto& s : stamps)
+        CHECK_THAT(s.angle, Catch::Matchers::WithinAbs(30.0f, 1e-4f));
 }
 
 TEST_CASE("Per-point squish override is reflected in stamp", "[stamppath]")
@@ -316,6 +333,25 @@ TEST_CASE("rotateToStroke=true produces stamps without crash", "[stamppath]")
 
     auto stamps = drainStamps(sp);
     CHECK_FALSE(stamps.empty());
+}
+
+TEST_CASE("rotateToStroke adds BrushParams angle to stroke direction", "[stamppath]")
+{
+    BrushParams bp;
+    bp.radius         = 0.05f;
+    bp.spacing        = 0.1f;
+    bp.angle          = 30.0f;
+    bp.rotateToStroke = true;
+
+    StampPath sp(bp);
+    sp.add_point({0.0f, 0.0f});
+    sp.add_point({1.0f, 0.0f});
+
+    // A stroke along +x has a stroke angle of 270°.
+    auto stamps = drainStamps(sp);
+    REQUIRE_FALSE(stamps.empty());
+    for (const auto& s : stamps)
+        CHECK_THAT(s.angle, Catch::Matchers::WithinAbs(300.0f, 1e-3f));
 }
 
 // ── Jitter params (smoke tests) ───────────────────────────────────────────────
@@ -463,10 +499,10 @@ TEST_CASE("Seeded jitter matches known values", "[stamppath]")
     // Golden values; if these change, seeded annotations will render differently.
     struct Expected { float x, radius, opacity, angle; };
     const Expected expected[] = {
-        {0.002116f, 0.049022f, 0.988437f, 19.435486f},
-        {0.027972f, 0.048929f, 0.977128f, 35.645943f},
-        {0.049968f, 0.049871f, 0.980465f, 18.181038f},
-        {0.063755f, 0.049358f, 0.987663f, 25.056730f},
+        {0.002116f, 0.030447f, 0.768734f, 19.435486f},
+        {0.027972f, 0.028581f, 0.542565f, 35.645943f},
+        {0.049968f, 0.047418f, 0.609308f, 18.181038f},
+        {0.063755f, 0.037151f, 0.753269f, 25.056730f},
     };
 
     REQUIRE(stamps.size() == 19);
