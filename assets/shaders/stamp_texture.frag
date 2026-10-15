@@ -6,9 +6,7 @@
 //
 // Input:
 //   brushTip     — pattern/shape mask texture, read from the red channel.
-//   uColor       — RGBA stroke colour, constant for the whole draw call.
-//                  RGB sets the colour; A is unused since final alpha comes
-//                  from the per-vertex Opacity (see stamp.vert).
+//   uniformColor — RGB stroke colour, constant for the whole draw call.
 //   TexCoord0    — UV coordinates [0,1] from the stamp quad vertex shader.
 //   Opacity      — per-stamp opacity (for opacity jitter), duplicated
 //                  across each stamp's vertices in stamp.vert.
@@ -21,7 +19,7 @@
 
 uniform sampler2D brushTip;
 uniform float hardness;
-uniform vec4 uniformColor;
+uniform vec3 uniformColor; // RGB only, Opacity is per-stamp attribute
 
 IN_FRAG vec2 TexCoord0;
 IN_FRAG float Opacity;
