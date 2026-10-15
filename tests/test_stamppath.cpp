@@ -220,7 +220,24 @@ TEST_CASE("Per-point angle override is reflected in stamp", "[stamppath]")
     auto stamps = drainStamps(sp);
     REQUIRE_FALSE(stamps.empty());
     for (const auto& s : stamps)
-        CHECK(s.angle > 0.0f - 1e-4f); // angle biased toward 45°
+        CHECK_THAT(s.angle, Catch::Matchers::WithinAbs(45.0f, 1e-4f));
+}
+
+TEST_CASE("BrushParams angle is applied once", "[stamppath]")
+{
+    BrushParams bp;
+    bp.radius  = 0.05f;
+    bp.spacing = 0.1f;
+    bp.angle   = 30.0f;
+
+    StampPath sp(bp);
+    sp.add_point({0.0f, 0.0f});
+    sp.add_point({1.0f, 0.0f});
+
+    auto stamps = drainStamps(sp);
+    REQUIRE_FALSE(stamps.empty());
+    for (const auto& s : stamps)
+        CHECK_THAT(s.angle, Catch::Matchers::WithinAbs(30.0f, 1e-4f));
 }
 
 TEST_CASE("Per-point squish override is reflected in stamp", "[stamppath]")
@@ -316,6 +333,25 @@ TEST_CASE("rotateToStroke=true produces stamps without crash", "[stamppath]")
 
     auto stamps = drainStamps(sp);
     CHECK_FALSE(stamps.empty());
+}
+
+TEST_CASE("rotateToStroke adds BrushParams angle to stroke direction", "[stamppath]")
+{
+    BrushParams bp;
+    bp.radius         = 0.05f;
+    bp.spacing        = 0.1f;
+    bp.angle          = 30.0f;
+    bp.rotateToStroke = true;
+
+    StampPath sp(bp);
+    sp.add_point({0.0f, 0.0f});
+    sp.add_point({1.0f, 0.0f});
+
+    // A stroke along +x has a stroke angle of 270°.
+    auto stamps = drainStamps(sp);
+    REQUIRE_FALSE(stamps.empty());
+    for (const auto& s : stamps)
+        CHECK_THAT(s.angle, Catch::Matchers::WithinAbs(300.0f, 1e-3f));
 }
 
 // ── Jitter params (smoke tests) ───────────────────────────────────────────────

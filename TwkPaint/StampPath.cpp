@@ -35,7 +35,6 @@ void StampPath::reset(const BrushParams& params)
     frac_             = 0.0f;
     dist_ =
         (params.spacing > 0.f) ? params.spacing : default_spacing_(params.radius, params.squish);
-    base_angle_  = params.angle;
     points_seen_ = 0;
     if (params_.seed.has_value()) rng_.seed(params_.seed.value());
     interp_.reset(new SmoothInterpolate2D);
@@ -98,7 +97,10 @@ void StampPath::add_point(const TwkMath::Vec2f& pt, float radius, float opacity,
         from_opacity_ = o;
         from_angle_   = a;
         from_squish_  = s;
-        base_angle_   = a;
+        to_radius_    = r;
+        to_opacity_   = o;
+        to_angle_     = a;
+        to_squish_    = s;
         dist_         = (params_.spacing > 0.f) ? params_.spacing : default_spacing_(r, s);
     }
     else
@@ -175,7 +177,7 @@ bool StampPath::next(StampInstance& out)
     }
 
     // ── angle: rotate-to-stroke + jitter ─────────────────────────────────────
-    float angle = base_angle_ + cur_angle;
+    float angle = cur_angle;
 
     if (params_.rotateToStroke)
     {
@@ -183,7 +185,7 @@ bool StampPath::next(StampInstance& out)
         if (interp_->dir(dx, dy) && (dx != 0.0f || dy != 0.0f))
         {
             const float stroke_angle = std::atan2(dy, dx) * (180.0f / 3.14159265f) + 270.0f;
-            angle                    = stroke_angle + base_angle_;
+            angle += stroke_angle;
         }
     }
 

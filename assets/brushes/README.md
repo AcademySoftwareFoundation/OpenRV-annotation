@@ -33,6 +33,3 @@ are implemented in `TwkPaint/StampPath.cpp`, and the stamp's look in
 - All jitter is random, so pass a `seed` in the `BrushParams` given to the
   `StampPath` constructor to make it deterministic. With a seed, the same
   stroke always gets the same stamps on every redraw and across platforms.
-- With `rotateToStroke` off, `StampPath::next()` adds `angle` twice
-  (`base_angle_ + cur_angle`). All brushes here use `angle: 0`, so it has no
-  visible effect yet.
