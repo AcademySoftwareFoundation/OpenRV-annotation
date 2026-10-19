@@ -1,60 +1,100 @@
 {
-  "version": 1,
+  "version": 2,
   "brushes": [
     {
-      "name": "circle",
-      "tip": null,
-      "blend": "normal",
-      "soft": false,
-      "note": "Procedural hard circle — no texture file needed"
-    },
-    {
-      "name": "gauss",
-      "tip": null,
-      "blend": "normal",
-      "soft": true,
-      "note": "Procedural Gaussian soft brush — no texture file needed"
-    },
-    {
-      "name": "marker",
-      "tip": "marker_128.png",
-      "blend": "marker",
-      "soft": false,
+      "name": "pen",
+      "tip": "hard_solid_256.png",
       "params": {
-        "spacingBias": 1.0,
+        "spacingBias": 0.24,
+        "spacingJitter": 0.0,
         "opacityJitter": 0.0,
         "radiusJitter": 0.0,
         "rotationJitter": 0.0,
-        "spacingJitter": 0.0,
-        "rotateToStroke": false
+        "rotateToStroke": false,
+        "angle": 0.0,
+        "squish": 1.0,
+        "hardness": 0.9,
+        "flow": 1.0
       }
     },
     {
-      "name": "airbrush",
-      "tip": "airbrush_128.png",
-      "blend": "normal",
-      "soft": true,
+      "name": "pencil",
+      "tip": "pencil_2B_256.png",
       "params": {
         "spacingBias": 0.6,
+        "spacingJitter": 0.9,
         "opacityJitter": 0.0,
         "radiusJitter": 0.0,
-        "rotationJitter": 0.0,
-        "spacingJitter": 0.1,
-        "rotateToStroke": false
+        "rotationJitter": 30.0,
+        "rotateToStroke": false,
+        "angle": 0.0,
+        "squish": 1.0,
+        "hardness": 0.8,
+        "flow": 1.0
       }
     },
     {
-      "name": "glow",
-      "tip": "airbrush_128.png",
-      "blend": "additive",
-      "soft": true,
+      "name": "camo",
+      "tip": "camo_256.png",
       "params": {
-        "spacingBias": 0.5,
+        "spacingBias": 0.9,
+        "spacingJitter": 0.2,
         "opacityJitter": 0.0,
         "radiusJitter": 0.0,
-        "rotationJitter": 0.0,
-        "spacingJitter": 0.1,
-        "rotateToStroke": false
+        "rotationJitter": 143.0,
+        "rotateToStroke": false,
+        "angle": 0.0,
+        "squish": 1.0,
+        "hardness": 0.6,
+        "flow": 1.0
+      }
+    },
+    {
+      "name": "charcoal",
+      "tip": "charcoal_256.png",
+      "params": {
+        "spacingBias": 0.96,
+        "spacingJitter": 0.0,
+        "opacityJitter": 0.0,
+        "radiusJitter": 0.0,
+        "rotationJitter": 45.0,
+        "rotateToStroke": true,
+        "angle": 0,
+        "squish": 1.0,
+        "hardness": 0.1,
+        "flow": 0.45
+      }
+    },
+    {
+      "name": "coarse_watercolor",
+      "tip": "coarse_watercolor_512.png",
+      "params": {
+        "spacingBias": 0.18,
+        "spacingJitter": 2.8,
+        "opacityJitter": 0.1,
+        "radiusJitter": 0.0,
+        "rotationJitter": 105.9,
+        "rotateToStroke": true,
+        "angle": 0.0,
+        "squish": 0.82,
+        "hardness": 0.3,
+        "flow": 0.35
+      }
+    },
+    {
+      "name": "hr",
+      "tip": "hr_256.png",
+      "params": {
+        "spacingBias": 1.98,
+        "spacingJitter": 0.0,
+        "opacityJitter": 0.0,
+        "radiusJitter": 0.0,
+        "rotationJitter": 108.0,
+        "rotateToStroke": true,
+        "angle": 0.0,
+        "squish": 1.0,
+        "hardness": 0.6,
+        "flow": 1.0
       }
     }
   ]
